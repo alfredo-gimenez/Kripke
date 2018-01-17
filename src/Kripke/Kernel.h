@@ -54,6 +54,17 @@ namespace Kripke {
     }
 
 
+    auto runtime_env_policy = 
+        RAJA::make_multi_policy<RAJA::seq_exec, 
+                                RAJA::loop_exec, 
+                                RAJA::simd_exec, 
+                                RAJA::omp_parallel_for_exec>
+                                    ([&](const RAJA::TypedRangeSegment<int> &r) {
+            (void)(r); // ignore when this parameter is unused
+            return std::stoi(std::getenv("RAJA_POLICY"));
+    });
+
+
     void LPlusTimes(Kripke::Core::DataStore &data_store);
 
 
@@ -77,7 +88,7 @@ namespace Kripke {
     void kConst(FieldType &field, Kripke::SdomId sdom_id, typename FieldType::ElementType value){
       auto view1d = field.getView1d(sdom_id);
       int num_elem = field.size(sdom_id);
-      RAJA::forall<RAJA::loop_exec>(0, num_elem, [=](RAJA::Index_type i){
+      RAJA::forall(runtime_env_policy, 0, num_elem, [=](RAJA::Index_type i){
 			 	view1d(i) = value;
       });
     }
@@ -101,7 +112,7 @@ namespace Kripke {
       auto view_dst = field_dst.getView1d(sdom_id_dst);
       int num_elem = field_src.size(sdom_id_src);
 
-      RAJA::forall<RAJA::loop_exec>(0, num_elem, [=](RAJA::Index_type i){
+      RAJA::forall(runtime_env_policy, 0, num_elem, [=](RAJA::Index_type i){
         view_src(i) = view_dst(i);
       });
     }
