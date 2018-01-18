@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.1)
 
 project(KRIPKE LANGUAGES CXX)
 
+set(BLT_CXX_STD c++14)
+
 #
 # Initialize the BLT build system
 #

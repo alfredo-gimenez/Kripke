@@ -54,6 +54,12 @@ namespace Kripke {
     }
 
 
+    RAJA_INLINE
+    int getRuntimePolicy(const char *env_var) {
+      return std::stoi(std::getenv(env_var));
+    }
+
+
     auto runtime_env_policy = 
         RAJA::make_multi_policy<RAJA::seq_exec, 
                                 RAJA::loop_exec, 
@@ -61,7 +67,7 @@ namespace Kripke {
                                 RAJA::omp_parallel_for_exec>
                                     ([&](const RAJA::TypedRangeSegment<int> &r) {
             (void)(r); // ignore when this parameter is unused
-            return std::stoi(std::getenv("RAJA_POLICY"));
+            return getRuntimePolicy("RAJA_POLICY_KERNEL");
     });
 
 

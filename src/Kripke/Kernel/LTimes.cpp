@@ -68,37 +68,21 @@ struct LTimesSdom {
     auto ell = field_ell.getViewAL<AL>(sdom_id);
 
     // Compute:  phi =  ell * psi
-    // TODO: multipolicy of nested policies does not work, 
-    //       is this the most reasonable alternative?
-    {
-          int choice = std::stoi(std::getenv("RAJA_POLICY_LTIMES"));
-          switch(choice) {
-              case 0: 
-                  RAJA::nested::forall(
-                  Kripke::Arch::Policy_LTimes_Seq{},
-                  camp::make_tuple(
-                      RAJA::RangeSegment(0, num_moments),
-                      RAJA::RangeSegment(0, num_directions),
-                      RAJA::RangeSegment(0, num_groups),
-                      RAJA::RangeSegment(0, num_zones) ),
-                  KRIPKE_LAMBDA (Moment nm, Direction d, Group g, Zone z) {
-                     phi(nm,g,z) += ell(nm, d) * psi(d, g, z);
-                  });
-                  break;
-              case 1: 
-                  RAJA::nested::forall(
-                  Kripke::Arch::Policy_LTimes_Omp{},
-                  camp::make_tuple(
-                      RAJA::RangeSegment(0, num_moments),
-                      RAJA::RangeSegment(0, num_directions),
-                      RAJA::RangeSegment(0, num_groups),
-                      RAJA::RangeSegment(0, num_zones) ),
-                  KRIPKE_LAMBDA (Moment nm, Direction d, Group g, Zone z) {
-                     phi(nm,g,z) += ell(nm, d) * psi(d, g, z);
-                  });
-                  break;
-          }
-      }
+    Kripke::Arch::LTimesPolicySwitcher(
+        Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_LTIMES"), 
+        [=] (auto exec_policy) {
+            RAJA::nested::forall(
+                exec_policy,
+                camp::make_tuple(
+                    RAJA::RangeSegment(0, num_moments),
+                    RAJA::RangeSegment(0, num_directions),
+                    RAJA::RangeSegment(0, num_groups),
+                    RAJA::RangeSegment(0, num_zones) ),
+                KRIPKE_LAMBDA (Moment nm, Direction d, Group g, Zone z) {
+                   phi(nm,g,z) += ell(nm, d) * psi(d, g, z);
+            });
+        }
+    );
   }
 
 };

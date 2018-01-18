@@ -55,6 +55,15 @@ namespace Arch {
         RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
        >;
 
+  template <typename BODY>
+  void LTimesPolicySwitcher(int choice, BODY body) {
+    switch (choice) {
+      case 0: body(Policy_LTimes_Seq{}); break;
+      case 1: body(Policy_LTimes_Omp{}); break;
+      default: body(Policy_LTimes_Seq{}); break;
+    }
+  }
+
 }
 }
 
