@@ -66,17 +66,23 @@ struct LPlusTimesSdom {
     auto ell_plus = field_ell_plus.getViewAL<AL>(sdom_id);
 
     // Compute:  rhs =  ell_plus * phi_out
-    RAJA::nested::forall(
-        Kripke::Arch::Policy_LPlusTimes{},
-        camp::make_tuple(
-            RAJA::RangeSegment(0, num_directions),
-            RAJA::RangeSegment(0, num_moments),
-            RAJA::RangeSegment(0, num_groups),
-            RAJA::RangeSegment(0, num_zones) ),
-        KRIPKE_LAMBDA (Direction d, Moment nm, Group g, Zone z) {
+    Kripke::Arch::LPlusTimesPolicySwitcher(
+        Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_LPLUSTIMES"), 
+        [=] (auto exec_policy) {
+            RAJA::nested::forall(
+                exec_policy,
+                camp::make_tuple(
+                    RAJA::RangeSegment(0, num_directions),
+                    RAJA::RangeSegment(0, num_moments),
+                    RAJA::RangeSegment(0, num_groups),
+                    RAJA::RangeSegment(0, num_zones) ),
+                KRIPKE_LAMBDA (Direction d, Moment nm, Group g, Zone z) {
 
-            rhs(d,g,z) += ell_plus(d, nm) * phi_out(nm, g, z);
+                    // Computation here
+                    rhs(d,g,z) += ell_plus(d, nm) * phi_out(nm, g, z);
 
+                }
+            );
         }
     );
   }

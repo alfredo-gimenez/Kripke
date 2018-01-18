@@ -75,21 +75,27 @@ struct SourceSdom {
 
 
     // Compute:  phi =  ell * psi
-    RAJA::nested::forall(Kripke::Arch::Policy_Source{},
-        camp::make_tuple(
-            RAJA::RangeSegment(0, num_groups),
-            RAJA::RangeSegment(0, num_mixed) ),
-        KRIPKE_LAMBDA (Group g, MixElem mix) {
+    Kripke::Arch::SourcePolicySwitcher(
+        Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_SOURCE"), 
+        [=] (auto exec_policy) {
+        RAJA::nested::forall(
+            exec_policy,
+            camp::make_tuple(
+                RAJA::RangeSegment(0, num_groups),
+                RAJA::RangeSegment(0, num_mixed) ),
+            KRIPKE_LAMBDA (Group g, MixElem mix) {
 
-            Material material = mixelem_to_material(mix);
+                Material material = mixelem_to_material(mix);
 
-            if(material == 2){
-              Zone z = mixelem_to_zone(mix);
-              double fraction = mixelem_to_fraction(mix);
+                if(material == 2){
+                  Zone z = mixelem_to_zone(mix);
+                  double fraction = mixelem_to_fraction(mix);
 
-              phi_out(nm, g, z) += source_strength * fraction;
+                  phi_out(nm, g, z) += source_strength * fraction;
+                }
+
             }
-
+        );
         }
     );
 

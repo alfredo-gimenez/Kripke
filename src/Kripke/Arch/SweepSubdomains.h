@@ -39,8 +39,7 @@
 namespace Kripke {
 namespace Arch {
 
-#ifdef KRIPKE_ARCH_SEQUENTIAL
-  using Policy_SweepSubdomains =
+  using Policy_SweepSubdomains_Seq =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Direction>,
       RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
@@ -48,10 +47,8 @@ namespace Arch {
       RAJA::nested::TypedFor<3, RAJA::loop_exec, ZoneJ>,
       RAJA::nested::TypedFor<4, RAJA::loop_exec, ZoneI>
     >;
-#endif
 
-#ifdef KRIPKE_ARCH_OPENMP
-  using Policy_SweepSubdomains =
+  using Policy_SweepSubdomains_Omp =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<1, RAJA::omp_parallel_for_exec, Group>,
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Direction>,
@@ -59,7 +56,15 @@ namespace Arch {
       RAJA::nested::TypedFor<3, RAJA::loop_exec, ZoneJ>,
       RAJA::nested::TypedFor<4, RAJA::loop_exec, ZoneI>
     >;
-#endif
+
+  template <typename BODY>
+  void SweepSubdomainsPolicySwitcher(int choice, BODY body) {
+    switch (choice) {
+      case 1: body(Policy_SweepSubdomains_Omp{}); break;
+      case 0: 
+      default: body(Policy_SweepSubdomains_Seq{}); break;
+    }
+  }
 
 }
 }

@@ -69,19 +69,22 @@ struct LTimesSdom {
 
     // Compute:  phi =  ell * psi
     Kripke::Arch::LTimesPolicySwitcher(
-        Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_LTIMES"), 
-        [=] (auto exec_policy) {
-            RAJA::nested::forall(
-                exec_policy,
-                camp::make_tuple(
-                    RAJA::RangeSegment(0, num_moments),
-                    RAJA::RangeSegment(0, num_directions),
-                    RAJA::RangeSegment(0, num_groups),
-                    RAJA::RangeSegment(0, num_zones) ),
-                KRIPKE_LAMBDA (Moment nm, Direction d, Group g, Zone z) {
-                   phi(nm,g,z) += ell(nm, d) * psi(d, g, z);
-            });
-        }
+      Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_LTIMES"), 
+      [=] (auto exec_policy) {
+        RAJA::nested::forall(
+          exec_policy,
+          camp::make_tuple(
+            RAJA::RangeSegment(0, num_moments),
+            RAJA::RangeSegment(0, num_directions),
+            RAJA::RangeSegment(0, num_groups),
+            RAJA::RangeSegment(0, num_zones) ),
+          KRIPKE_LAMBDA (Moment nm, Direction d, Group g, Zone z) {
+
+            // Computation here
+            phi(nm,g,z) += ell(nm, d) * psi(d, g, z);
+
+        });
+      }
     );
   }
 

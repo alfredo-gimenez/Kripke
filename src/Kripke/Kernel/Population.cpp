@@ -64,21 +64,45 @@ struct PopulationSdom {
     auto w = field_w.getViewAL<AL>(sdom_id);
     auto volume = field_volume.getViewAL<AL>(sdom_id);
 
-    RAJA::ReduceSum<Kripke::Arch::Reduce_Population, double> part_red(0);
+    int policy = Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_POPULATION");
 
-    RAJA::nested::forall(Kripke::Arch::Policy_Population{},
-        camp::make_tuple(
-            RAJA::RangeSegment(0, num_directions),
-            RAJA::RangeSegment(0, num_groups),
-            RAJA::RangeSegment(0, num_zones) ),
-        KRIPKE_LAMBDA (Direction d, Group g, Zone z) {
+    switch (policy) {
+      case 1:
+        {
+          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Seq, double> part_red(0);
+          RAJA::nested::forall(
+              Kripke::Arch::Policy_Population_Seq{},
+              camp::make_tuple(
+                RAJA::RangeSegment(0, num_directions),
+                RAJA::RangeSegment(0, num_groups),
+                RAJA::RangeSegment(0, num_zones) ),
+              KRIPKE_LAMBDA (Direction d, Group g, Zone z) {
 
-          part_red += w(d) * psi(d,g,z) * volume(z);
+              part_red += w(d) * psi(d,g,z) * volume(z);
 
+              }
+              );
+          *part_ptr = part_red;
         }
-    );
+      case 0:
+      default:
+        {
+          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Omp, double> part_red(0);
+          RAJA::nested::forall(
+              Kripke::Arch::Policy_Population_Omp{},
+              camp::make_tuple(
+                RAJA::RangeSegment(0, num_directions),
+                RAJA::RangeSegment(0, num_groups),
+                RAJA::RangeSegment(0, num_zones) ),
+              KRIPKE_LAMBDA (Direction d, Group g, Zone z) {
 
-    *part_ptr = part_red;
+              part_red += w(d) * psi(d,g,z) * volume(z);
+
+              }
+              );
+          *part_ptr = part_red;
+        }
+    }
   }
 
 };

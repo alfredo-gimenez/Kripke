@@ -39,25 +39,30 @@
 namespace Kripke {
 namespace Arch {
 
-#ifdef KRIPKE_ARCH_SEQUENTIAL
-  using Policy_Scattering =
+  using Policy_Scattering_Seq =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
       RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
       RAJA::nested::TypedFor<2, RAJA::loop_exec, Group>,
       RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
     >;
-#endif
 
-#ifdef KRIPKE_ARCH_OPENMP
-  using Policy_Scattering =
+  using Policy_Scattering_Omp =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<1, RAJA::omp_parallel_for_exec, Group>,
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
       RAJA::nested::TypedFor<2, RAJA::loop_exec, Group>,
       RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
     >;
-#endif
+
+  template <typename BODY>
+  void ScatteringPolicySwitcher(int choice, BODY body) {
+    switch (choice) {
+      case 1: body(Policy_Scattering_Omp{}); break;
+      case 0: 
+      default: body(Policy_Scattering_Seq{}); break;
+    }
+  }
 
 }
 }

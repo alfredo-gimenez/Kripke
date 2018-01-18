@@ -92,38 +92,44 @@ struct SweepSdom {
 
     auto zone_layout = data_store.getVariable<ProductSet<3>>("Set/Zone").getLayout(sdom_id);
 
-    RAJA::nested::forall(Kripke::Arch::Policy_SweepSubdomains{},
-        camp::make_tuple(
-            RAJA::RangeSegment(0, num_directions),
-            RAJA::RangeSegment(0, num_groups),
-            RAJA::RangeStrideSegment(*start_k, *end_k, kd),
-            RAJA::RangeStrideSegment(*start_j, *end_j, jd),
-            RAJA::RangeStrideSegment(*start_i, *end_i, id)
+    Kripke::Arch::SweepSubdomainsPolicySwitcher(
+        Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_SWEEP_SUBDOMAIN"), 
+        [=] (auto exec_policy) {
+          RAJA::nested::forall(
+              exec_policy,
+              camp::make_tuple(
+                  RAJA::RangeSegment(0, num_directions),
+                  RAJA::RangeSegment(0, num_groups),
+                  RAJA::RangeStrideSegment(*start_k, *end_k, kd),
+                  RAJA::RangeStrideSegment(*start_j, *end_j, jd),
+                  RAJA::RangeStrideSegment(*start_i, *end_i, id)
 
 
-    ),
-        KRIPKE_LAMBDA (Direction d, Group g, ZoneK k, ZoneJ j, ZoneI i) {
+          ),
+              KRIPKE_LAMBDA (Direction d, Group g, ZoneK k, ZoneJ j, ZoneI i) {
 
-            double xcos_dxi = 2.0 * xcos(d) / dx(i);
-            double ycos_dyj = 2.0 * ycos(d) / dy(j);
-            double zcos_dzk = 2.0 * zcos(d) / dz(k);
+                  double xcos_dxi = 2.0 * xcos(d) / dx(i);
+                  double ycos_dyj = 2.0 * ycos(d) / dy(j);
+                  double zcos_dzk = 2.0 * zcos(d) / dz(k);
 
-            Zone z(zone_layout(*i, *j, *k));
+                  Zone z(zone_layout(*i, *j, *k));
 
-            /* Calculate new zonal flux */
-            double psi_d_g_z = (rhs(d,g,z)
-                + psi_lf(d, g, j, k) * xcos_dxi
-                + psi_fr(d, g, i, k) * ycos_dyj
-                + psi_bo(d, g, i, j) * zcos_dzk)
-                / (xcos_dxi + ycos_dyj + zcos_dzk + sigt(g, z));
+                  /* Calculate new zonal flux */
+                  double psi_d_g_z = (rhs(d,g,z)
+                      + psi_lf(d, g, j, k) * xcos_dxi
+                      + psi_fr(d, g, i, k) * ycos_dyj
+                      + psi_bo(d, g, i, j) * zcos_dzk)
+                      / (xcos_dxi + ycos_dyj + zcos_dzk + sigt(g, z));
 
-            psi(d, g, z) = psi_d_g_z;
+                  psi(d, g, z) = psi_d_g_z;
 
-            /* Apply diamond-difference relationships */
-            psi_lf(d, g, j, k) = 2.0 * psi_d_g_z - psi_lf(d, g, j, k);
-            psi_fr(d, g, i, k) = 2.0 * psi_d_g_z - psi_fr(d, g, i, k);
-            psi_bo(d, g, i, j) = 2.0 * psi_d_g_z - psi_bo(d, g, i, j);
+                  /* Apply diamond-difference relationships */
+                  psi_lf(d, g, j, k) = 2.0 * psi_d_g_z - psi_lf(d, g, j, k);
+                  psi_fr(d, g, i, k) = 2.0 * psi_d_g_z - psi_fr(d, g, i, k);
+                  psi_bo(d, g, i, j) = 2.0 * psi_d_g_z - psi_bo(d, g, i, j);
 
+              }
+          );
         }
     );
   }

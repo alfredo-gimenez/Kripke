@@ -39,22 +39,26 @@
 namespace Kripke {
 namespace Arch {
 
-#ifdef KRIPKE_ARCH_SEQUENTIAL
-  using Policy_Source =
+  using Policy_Source_Seq =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Group>,
       RAJA::nested::TypedFor<1, RAJA::loop_exec, MixElem>
     >;
-#endif
 
-#ifdef KRIPKE_ARCH_OPENMP
-  using Policy_Source =
+  using Policy_Source_Omp =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<0, RAJA::omp_parallel_for_exec, Group>,
       RAJA::nested::TypedFor<1, RAJA::loop_exec, MixElem>
     >;
-#endif
 
+  template <typename BODY>
+  void SourcePolicySwitcher(int choice, BODY body) {
+    switch (choice) {
+      case 1: body(Policy_Source_Omp{}); break;
+      case 0: 
+      default: body(Policy_Source_Seq{}); break;
+    }
+  }
 }
 }
 

@@ -93,39 +93,43 @@ struct ScatteringSdom {
     int num_groups_dst = set_group.size(sdom_dst);
     int num_moments =    set_moment.size(sdom_dst);
 
-    RAJA::nested::forall(
-        Kripke::Arch::Policy_Scattering{},
-        camp::make_tuple(
-            RAJA::RangeSegment(0, num_moments),
-            RAJA::RangeSegment(0, num_groups_dst),
-            RAJA::RangeSegment(0, num_groups_src),
-            RAJA::RangeSegment(0, num_zones) ),
-        KRIPKE_LAMBDA (Moment nm, Group g, Group gp, Zone z) {
+    Kripke::Arch::ScatteringPolicySwitcher(
+        Kripke::Kernel::getRuntimePolicy("RAJA_POLICY_SCATTERING"), 
+        [=] (auto exec_policy) {
+        RAJA::nested::forall(
+            exec_policy,
+            camp::make_tuple(
+                RAJA::RangeSegment(0, num_moments),
+                RAJA::RangeSegment(0, num_groups_dst),
+                RAJA::RangeSegment(0, num_groups_src),
+                RAJA::RangeSegment(0, num_zones) ),
+            KRIPKE_LAMBDA (Moment nm, Group g, Group gp, Zone z) {
 
-            // map nm to n
-            Legendre n = moment_to_legendre(nm);
+                // map nm to n
+                Legendre n = moment_to_legendre(nm);
 
-            GlobalGroup global_g{*g+glower_dst};
-            GlobalGroup global_gp{*gp+glower_src};
+                GlobalGroup global_g{*g+glower_dst};
+                GlobalGroup global_gp{*gp+glower_src};
 
-            MixElem mix_start = zone_to_mixelem(z);
-            MixElem mix_stop = mix_start + zone_to_num_mixelem(z);
+                MixElem mix_start = zone_to_mixelem(z);
+                MixElem mix_stop = mix_start + zone_to_num_mixelem(z);
 
-            for(MixElem mix = mix_start;mix < mix_stop;++ mix){
-              Material mat = mixelem_to_material(mix);
-              double fraction = mixelem_to_fraction(mix);
+                for(MixElem mix = mix_start;mix < mix_stop;++ mix){
+                  Material mat = mixelem_to_material(mix);
+                  double fraction = mixelem_to_fraction(mix);
 
-              phi_out(nm, g, z) +=
-                  sigs(mat, n, global_g, global_gp)
-                  * phi(nm, gp, z)
-                  * fraction;
+                  phi_out(nm, g, z) +=
+                      sigs(mat, n, global_g, global_gp)
+                      * phi(nm, gp, z)
+                      * fraction;
 
 
-            }
-        }
-    );
+                }
+           }
+        );
+      }
+   );
   }
-
 };
 
 

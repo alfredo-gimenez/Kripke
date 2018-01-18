@@ -55,8 +55,18 @@ namespace Kripke {
 
 
     RAJA_INLINE
-    int getRuntimePolicy(const char *env_var) {
-      return std::stoi(std::getenv(env_var));
+    int getRuntimePolicy(const char *env_var) 
+    {
+        int choice = 0;
+
+        try {
+          choice = std::stoi(std::getenv(env_var));
+        }
+        catch(...){
+          // fail to default 0
+        }
+
+        return choice;
     }
 
 

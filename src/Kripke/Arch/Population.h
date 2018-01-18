@@ -39,29 +39,23 @@
 namespace Kripke {
 namespace Arch {
 
-#ifdef KRIPKE_ARCH_SEQUENTIAL
+  using Reduce_Population_Seq = RAJA::seq_reduce;
 
-  using Reduce_Population = RAJA::seq_reduce;
-
-  using Policy_Population =
+  using Policy_Population_Seq =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Direction>,
       RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
       RAJA::nested::TypedFor<2, RAJA::loop_exec, Zone>
     >;
-#endif
 
-#ifdef KRIPKE_ARCH_OPENMP
+  using Reduce_Population_Omp = RAJA::omp_reduce;
 
-  using Reduce_Population = RAJA::omp_reduce;
-
-  using Policy_Population =
+  using Policy_Population_Omp =
     RAJA::nested::Policy<
       RAJA::nested::TypedFor<1, RAJA::omp_parallel_for_exec, Group>,
       RAJA::nested::TypedFor<0, RAJA::loop_exec, Direction>,
       RAJA::nested::TypedFor<2, RAJA::loop_exec, Zone>
     >;
-#endif
 
 }
 }

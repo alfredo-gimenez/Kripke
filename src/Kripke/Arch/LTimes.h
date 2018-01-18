@@ -40,26 +40,26 @@ namespace Kripke {
 namespace Arch {
 
   using Policy_LTimes_Seq = 
-        RAJA::nested::Policy<
-          RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
-          RAJA::nested::TypedFor<1, RAJA::loop_exec, Direction>,
-          RAJA::nested::TypedFor<2, RAJA::loop_exec, Group>,
-          RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
-        >;
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Direction>,
+      RAJA::nested::TypedFor<2, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
+    >;
 
   using Policy_LTimes_Omp = 
-      RAJA::nested::Policy<
-        RAJA::nested::TypedFor<2, RAJA::omp_parallel_for_exec, Group>,
-        RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
-        RAJA::nested::TypedFor<1, RAJA::loop_exec, Direction>,
-        RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
-       >;
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<2, RAJA::omp_parallel_for_exec, Group>,
+      RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Direction>,
+      RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
+     >;
 
   template <typename BODY>
   void LTimesPolicySwitcher(int choice, BODY body) {
     switch (choice) {
-      case 0: body(Policy_LTimes_Seq{}); break;
       case 1: body(Policy_LTimes_Omp{}); break;
+      case 0: 
       default: body(Policy_LTimes_Seq{}); break;
     }
   }
