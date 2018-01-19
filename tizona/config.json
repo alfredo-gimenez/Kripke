@@ -1,0 +1,8 @@
+{ 
+  "host"  :  { "type"      : "Slurm",
+               "account"   : "lc",
+               "partition" : "pbatch"},
+
+  "base"    :  { "OUT_DIR"  : "$HOME/local/src/Kripke/tizona/batch_experiments"}
+
+}
