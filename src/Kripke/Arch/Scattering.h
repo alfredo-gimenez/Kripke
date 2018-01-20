@@ -55,10 +55,37 @@ namespace Arch {
       RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
     >;
 
+  using Policy_Scattering_Omp2 =
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<0, RAJA::omp_parallel_for_exec, Moment>,
+      RAJA::nested::TypedFor<2, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
+    >;
+
+  using Policy_Scattering_Omp3 =
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
+      RAJA::nested::TypedFor<2, RAJA::omp_parallel_for_exec, Group>,
+      RAJA::nested::TypedFor<3, RAJA::loop_exec, Zone>
+    >;
+
+  using Policy_Scattering_Omp4 =
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<0, RAJA::loop_exec, Moment>,
+      RAJA::nested::TypedFor<2, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<3, RAJA::omp_parallel_for_exec, Zone>
+    >;
+
   template <typename BODY>
   void ScatteringPolicySwitcher(int choice, BODY body) {
     switch (choice) {
       case 1: body(Policy_Scattering_Omp{}); break;
+      case 2: body(Policy_Scattering_Omp2{}); break;
+      case 3: body(Policy_Scattering_Omp3{}); break;
+      case 4: body(Policy_Scattering_Omp4{}); break;
       case 0: 
       default: body(Policy_Scattering_Seq{}); break;
     }

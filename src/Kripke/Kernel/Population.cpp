@@ -69,9 +69,43 @@ struct PopulationSdom {
     switch (policy) {
       case 1:
         {
-          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Seq, double> part_red(0);
+          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Omp, double> part_red(0);
           RAJA::nested::forall(
-              Kripke::Arch::Policy_Population_Seq{},
+              Kripke::Arch::Policy_Population_Omp{},
+              camp::make_tuple(
+                RAJA::RangeSegment(0, num_directions),
+                RAJA::RangeSegment(0, num_groups),
+                RAJA::RangeSegment(0, num_zones) ),
+              KRIPKE_LAMBDA (Direction d, Group g, Zone z) {
+
+              part_red += w(d) * psi(d,g,z) * volume(z);
+
+              }
+              );
+          *part_ptr = part_red;
+        }
+      case 2:
+        {
+          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Omp, double> part_red(0);
+          RAJA::nested::forall(
+              Kripke::Arch::Policy_Population_Omp2{},
+              camp::make_tuple(
+                RAJA::RangeSegment(0, num_directions),
+                RAJA::RangeSegment(0, num_groups),
+                RAJA::RangeSegment(0, num_zones) ),
+              KRIPKE_LAMBDA (Direction d, Group g, Zone z) {
+
+              part_red += w(d) * psi(d,g,z) * volume(z);
+
+              }
+              );
+          *part_ptr = part_red;
+        }
+      case 3:
+        {
+          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Omp, double> part_red(0);
+          RAJA::nested::forall(
+              Kripke::Arch::Policy_Population_Omp3{},
               camp::make_tuple(
                 RAJA::RangeSegment(0, num_directions),
                 RAJA::RangeSegment(0, num_groups),
@@ -87,9 +121,9 @@ struct PopulationSdom {
       case 0:
       default:
         {
-          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Omp, double> part_red(0);
+          RAJA::ReduceSum<Kripke::Arch::Reduce_Population_Seq, double> part_red(0);
           RAJA::nested::forall(
-              Kripke::Arch::Policy_Population_Omp{},
+              Kripke::Arch::Policy_Population_Seq{},
               camp::make_tuple(
                 RAJA::RangeSegment(0, num_directions),
                 RAJA::RangeSegment(0, num_groups),

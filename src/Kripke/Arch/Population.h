@@ -57,6 +57,20 @@ namespace Arch {
       RAJA::nested::TypedFor<2, RAJA::loop_exec, Zone>
     >;
 
+  using Policy_Population_Omp2 =
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<0, RAJA::omp_parallel_for_exec, Direction>,
+      RAJA::nested::TypedFor<2, RAJA::loop_exec, Zone>
+    >;
+
+  using Policy_Population_Omp3 =
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<1, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<0, RAJA::loop_exec, Direction>,
+      RAJA::nested::TypedFor<2, RAJA::omp_parallel_for_exec, Zone>
+    >;
+
 }
 }
 

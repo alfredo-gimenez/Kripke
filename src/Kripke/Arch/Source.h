@@ -51,10 +51,17 @@ namespace Arch {
       RAJA::nested::TypedFor<1, RAJA::loop_exec, MixElem>
     >;
 
+  using Policy_Source_Omp2 =
+    RAJA::nested::Policy<
+      RAJA::nested::TypedFor<0, RAJA::loop_exec, Group>,
+      RAJA::nested::TypedFor<1, RAJA::omp_parallel_for_exec, MixElem>
+    >;
+
   template <typename BODY>
   void SourcePolicySwitcher(int choice, BODY body) {
     switch (choice) {
       case 1: body(Policy_Source_Omp{}); break;
+      case 2: body(Policy_Source_Omp2{}); break;
       case 0: 
       default: body(Policy_Source_Seq{}); break;
     }

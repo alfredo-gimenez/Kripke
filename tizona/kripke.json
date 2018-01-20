@@ -1,13 +1,13 @@
 {
     "model"   : "base",
-    "working_dir" : "run_kripke",
+    "working_dir" : "rundir",
     "name"        : "kernel%(kernel)d_ltimes%(ltimes)d_lplustimes%(lplustimes)d_population%(population)d_scattering%(scattering)d_source%(source)d_sweep%(sweep)d_run%(runs)d",
      
     "pack_name"   : "PACK",
 
     "wall_time"   : "00:05:00",
 
-    "bin" : ["cd $HOME/local/src/Tizona/run_kripke;",
+    "bin" : ["cd $HOME/local/src/Kripke/tizona;",
              "export RAJA_POLICY_KERNEL=%(kernel)d",
              "export RAJA_POLICY_LTIMES=%(ltimes)d",
              "export RAJA_POLICY_LPLUSTIMES=%(lplustimes)d",
@@ -19,12 +19,12 @@
     "params" : {
         "nodes"      : 1,
         "kernel"     : [0, 1],
-        "ltimes"     : [0, 1],
-        "lplustimes" : [0, 1],
-        "population" : [0, 1],
-        "scattering" : [0, 1],
-        "source"     : [0, 1],
-        "sweep"      : [0, 1],
+        "ltimes"     : [0, 1, 2, 3, 4],
+        "lplustimes" : [0, 1, 2, 3, 4],
+        "population" : [0, 1, 2, 3],
+        "scattering" : [0, 1, 2, 3, 4, 5],
+        "source"     : [0, 1, 2],
+        "sweep"      : [0, 1, 2, 3, 4, 5],
         "runs"       : "py:range(5)"
     }
 }
